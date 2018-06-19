@@ -1,3 +1,6 @@
+'use strict';
+/* global $ */
+
 const API_KEY = 'AIzaSyBj7JcuxJhmbNRDEvGzcfnVMlMWGNea8Sc';
 
 /*
@@ -13,13 +16,7 @@ const API_KEY = 'AIzaSyBj7JcuxJhmbNRDEvGzcfnVMlMWGNea8Sc';
 
 */
 const store = {
-  videos: [
-    {
-      id: '98ds8fbsdy67',
-      title: 'Cats dancing the Macarena',
-      thumbnail: 'https://img.youtube.com/some/thumbnail.jpg'
-    }
-  ]
+  videos: []
 };
 
 // TASK: Add the Youtube Search API Base URL here:
@@ -33,12 +30,12 @@ const BASE_URL = 'https://www.googleapis.com/youtube/v3/search';
 // TEST IT! Execute this function and console log the results inside the callback.
 const fetchVideos = function(searchTerm, callback) {
   const query = {
-      q: searchTerm,
-      key: API_KEY,
-      part: 'snippet'
-    };
+    q: searchTerm,
+    key: API_KEY,
+    part: 'snippet'
+  };
 
-   $.getJSON(BASE_URL, query, callback)
+  $.getJSON(BASE_URL, query, callback);
 };
 
 // TASK:
@@ -55,8 +52,8 @@ const decorateResponse = function(response) {
       id: item.id.videoId,
       title: item.snippet.title,
       thumbnail: item.snippet.thumbnails.medium.url
-    }
-  })
+    };
+  });
 };
 
 // TASK:
@@ -66,7 +63,7 @@ const decorateResponse = function(response) {
 const generateVideoItemHtml = function(video) {
   return  `
   <li class="js-search-result" data-item-id="${video.id}">
-    <span>${video.title}</span>
+    <h3>${video.title}</h3>
     <img src="${video.thumbnail}">
   </li>`;
 };
@@ -77,7 +74,6 @@ const generateVideoItemHtml = function(video) {
 // TEST IT!
 const addVideosToStore = function(videos) {
   store.videos = videos;
-
 };
 
 // TASK:
@@ -86,7 +82,8 @@ const addVideosToStore = function(videos) {
 // 3. Add your array of DOM elements to the appropriate DOM element
 // TEST IT!
 const render = function() {
-
+  const videosHtml = store.videos.map(video => generateVideoItemHtml(video)).join('');
+  $('.results').html(videosHtml);
 };
 
 // TASK:
@@ -101,6 +98,17 @@ const render = function() {
 //   g) Inside the callback, run the `render` function 
 // TEST IT!
 const handleFormSubmit = function() {
+  $('form').on('submit', event => {
+    event.preventDefault();
+    const searchTerm = $('#search-term').val();
+    $('#search-term').val('');
+
+    fetchVideos(searchTerm, response => {
+      const videos = decorateResponse(response);
+      addVideosToStore(videos);
+      render();
+    });
+  });
 
 };
 
@@ -108,4 +116,5 @@ const handleFormSubmit = function() {
 $(function () {
   // TASK:
   // 1. Run `handleFormSubmit` to bind the event listener to the DOM
+  handleFormSubmit();
 });
